@@ -173,3 +173,8 @@ Logging to syslog
 
 certbot certificates
 
+
+ssh-keygen -t ed25519 
+ssh-keygen -y -f ~/.ssh/id_ed25519
+
+name -i 
