@@ -174,7 +174,23 @@ Logging to syslog
 certbot certificates
 
 
+thundering herd（惊群） 问题
+	daemon on是在前台还是在后台
+    error_log 是 Nginx 中用于配置错误日志（error log）的存储位置、记录级别和输出格式的指令。
+    
+
+
 ssh-keygen -t ed25519 
 ssh-keygen -y -f ~/.ssh/id_ed25519
 
 name -i 
+
+
+垂直扩容，水平扩展
+SOA化
+
+入口细分 浏览器 客户端 H5内嵌
+
+各种Hash
+sticky模块
+
