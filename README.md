@@ -5,6 +5,171 @@ HTTP 服务器与反向代理服务器、邮件代理服务器，通用的 TCP/U
 
 高性能、高稳定性、丰富的功能、简洁的配置方式和较低的资源消耗
 
+-c file
+    使用指定的配置文件，而非默认配置文件。
+
+-e file
+    使用指定的错误日志文件。特殊值 stderr 表示将错误日志输出到标准错误流。
+
+-g directives
+    设置全局配置指令。具体用法请参阅“EXAMPLES”（示例）部分。
+
+-p prefix
+    设置路径前缀。默认值为 /usr/share/nginx。
+
+-q
+    测试配置时，抑制非错误信息的输出。
+
+-s signal
+    向主进程发送信号。signal 可以是以下值之一：
+
+    stop    SIGTERM   立即停止
+    quit    SIGQUIT   优雅地停止
+    reopen  SIGUSR1   重新打开日志文件
+    reload  SIGHUP    重新加载配置
+
+-T
+    与 -t 相同，但还会将配置文件内容输出到标准输出流。
+
+-t
+    不启动 Nginx，仅检查配置文件。
+    Nginx 会检查配置文件的语法，并尝试打开配置中引用的文件，
+    同时尝试绑定配置的监听地址。
+
+-V
+    显示 Nginx 版本、编译器版本以及配置脚本的参数。
+
+-v
+    显示 Nginx 版本。
+
+Installing NGINX Open Source
+The Stable version is always even-numbered, for example, 1.28.X.
+如何在多种操作系统上安装
+版本概述
+安装类型与方法
+默认软件包和动态模块软件包中包含的模块
+源码编译
+
+两个版本：主线版（Mainline）和稳定版（Stable）。
+官方 NGINX 开源仓库的软件包
+操作系统默认软件包仓库的软件包
+从源代码编译的软件包
+容器
+NGINX 核心模块被静态编译到 NGINX 二进制文件中，无法被禁用或排除。
+
+Create NGINX Plus and NGINX Configuration Files
+上下文顶层指令，将适用于不同流量类型的指令分组在一起。
+events – General connection processing
+http – HTTP traffic
+mail – Mail traffic
+stream – TCP and UDP traffic
+配置文件由指令及其参数组成。
+include 指令
+
+在每个流量处理上下文中，需包含一个或多个 server 块来定义虚拟服务器，以控制请求的处理。
+Inheritance
+NGINX Control REST API reference
+
+HTTP Load Balancing
+当多个后端服务器都能处理同一种请求时，谁来决定这次请求应该交给哪台服务器？
+负载均衡的本质，是将一个统一的服务入口与多个实际处理请求的后端解耦，并根据一定的调度策略选择后端。
+负载均衡器本身也可能成为单点故障。
+
+扩展性（Scalability）：增加后端实例，提升整体处理能力。
+资源利用率（Resource Utilization）：避免请求过度集中在某个实例上。
+容错能力（Fault Tolerance）：某个后端发生故障时，能够在符合故障检测与重试条件的情况下，将请求转发到其他可用后端。
+
+优化资源利用率、最大化吞吐量、减少延迟以及提高容错能力。
+提供第 7 层（应用层）负载均衡。
+从多种负载均衡算法中进行选择
+慢启动
+第 4 层或传输层负载均衡
+
+首先，使用 upstream 指令定义服务器组，并将该指令放置在 http 上下文中。
+组中的服务器使用 server 指令进行配置例如，以下配置定义了一个名为 backend 的组，包含三个服务器配置。这可能对应到三个以上的实际服务器。
+http {
+    upstream backend {
+        server backend1.example.com weight=5;
+        server backend2.example.com;
+        server 192.0.0.1 backup;
+    }
+}
+将请求传递到服务器组，需在 proxy_pass 指令中指定该组的名称。
+server {
+    location / {
+        proxy_pass http://backend;
+    }
+}
+
+ 开源版支持五种负载均衡方法：轮询（Round Robin）、最少连接（Least Connections）、最短时间（Least Time）、IP 哈希（IP Hash）和通用哈希（Generic Hash）。
+
+Least Connections 请求会被发送到活动连接数最少的服务器。此方法同时考虑服务器权重。
+upstream backend {
+    least_conn;
+    server backend1.example.com;
+    server backend2.example.com;
+}
+
+IP Hash 
+使用IPv4地址的前三个八位组或整个IPv6地址来计算哈希值。该方法确保来自同一地址的请求会被发送到同一台服务器，除非该服务器不可用。
+upstream backend {
+    ip_hash;
+    server backend1.example.com;
+    server backend2.example.com;
+}
+
+一台服务器需要暂时从负载均衡轮询中移除，可以使用 down 参数对其进行标记。
+这会保持当前客户端 IP 地址的哈希结果不变。原本要由该服务器处理的请求会自动发送到组中的下一台服务器。
+upstream backend {
+    server backend1.example.com;
+    server backend2.example.com;
+    server backend3.example.com down;
+}
+
+Generic Hash
+根据用户自定义的键，确定将请求发送到哪台服务器。该键可以是文本字符串、变量，也可以是由多个部分组合而成的表达式。例如，可以将客户端的源 IP 地址与端口号组合起来作为哈希键。下面的示例使用 URI 作为哈希键：
+upstream backend {
+    hash $request_uri consistent;
+    server backend1.example.com;
+    server backend2.example.com;
+}
+hash 指令的可选参数 consistent 启用基于 Ketama 一致性哈希（consistent hashing） 的负载均衡算法。
+该算法根据用户定义的哈希键值，将请求分配到各个上游服务器。启用一致性哈希后，当上游服务器组中新增或移除服务器时，只有少量键值需要重新映射到其他服务器，从而尽可能减少缓存未命中（cache misses）。
+这种方式适用于缓存服务器集群，以及其他需要在服务器端累积并维护状态的应用场景。
+
+Least Time
+对于每个请求，NGINX 会选择平均延迟较低、活动连接数较少的服务器。平均延迟的计算方式取决于 least_time 指令所指定的参数，该参数可以是以下值之一：
+- header：从服务器接收到响应首字节所需的时间。
+- last_byte：从服务器接收到完整响应所需的时间。
+- last_byte inflight：计算接收完整响应所需的时间，同时将尚未完成的请求考虑在内。
+upstream backend {
+    least_time header;
+    server backend1.example.com;
+    server backend2.example.com;
+
+}
+
+Server weights
+轮询（Round Robin）、最少连接（Least Connections）和随机（Random），会根据服务器的权重分配请求。
+server 指令中的 weight 参数用于设置服务器的权重。如果未指定权重，则默认值为 1
+upstream backend {
+    server backend1.example.com weight=5;
+    server backend2.example.com;
+    server 192.0.0.1 backup;
+}
+
+会话持久性（Session Persistence）是指 NGINX Plus 识别用户会话，并将同一会话中的所有请求都路由到同一台上游服务器。
+NGINX Plus 支持三种会话持久性方法，均通过 sticky 指令进行配置。对于 NGINX 开源版，可以使用前文介绍的 hash 或 ip_hash 指令实现类似的请求粘滞效果。
+
+NGINX 可以持续检测 HTTP 上游服务器的健康状况，避开发生故障的服务器，并在服务器恢复后，平稳地将其重新加入负载均衡组。
+
+
+
+
+
+
+
+
 企业版发行版、商业支持与培训由F5公司提供。
 
 Beginner’s Guide
