@@ -1,5 +1,36 @@
 # nginx-learning
 
+---
+nginx一小时入门精讲课程(干货纯享版)
+安装，静态Web，HTTP反向代理，动静分离，缓存，负载均衡，URL重写，TCP反向代理，HTTPS配置
+提供了虚拟机镜像，但是是否太重了？
+一个静态网页目录，Tomcat运行时，若以，sql脚本
+防火墙，yum源，curl访问进行测试
+
+selinux vscode remote ssh插件
+
+nginx config插件
+
+ssh密钥登录
+
+部署静态网站时，root写本机目录，index写index文件列表，空格分离
+
+servername的$hostname变量
+
+正向代理和反向代理
+反向代理使用proxy_pass
+
+proxy_set_header Host $http_host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+proxy_pass尾随的路径
+
+非HTTP的反向代理，例如CGI等等程序
+
+
+
+---
 NGINX(8)  
 HTTP 服务器与反向代理服务器、邮件代理服务器，通用的 TCP/UDP 代理服务器。
 
