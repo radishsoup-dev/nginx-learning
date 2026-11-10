@@ -28,6 +28,63 @@ proxy_pass尾随的路径
 
 非HTTP的反向代理，例如CGI等等程序
 
+动静分离
+~区分大小写，~*不区分大小写
+location ~* \.(jpg|jpeg|png|gif|ico|css|js)$
+
+location = /html/ie.html 等于优先级最高
+
+location ^~ /fonts/
+
+优先级从上到下为
+1，精确匹配=
+2，前缀匹配^~
+3，正则匹配~ ~*
+4，不写
+
+缓冲buffer放在内存中，nginx先将数据放入缓冲中，得到完整的响应后在回复客户端
+缓存cache将响应写入磁盘，减少请求次数。
+动态的缓存使用redis比较好
+
+使用负载均衡需要使用upstream指令，server指令
+健康检查
+
+HTTPS的配置
+
+TCP反向代理
+stream上下文，server上下文，proxy_pass指令
+
+nginx有两个重写指令，return和rewrite
+使用return的话，服务器停止处理请求，
+return code
+return code url
+return code text
+return url
+
+return 301 https转发和重定向（不让用户的收藏失效）
+301永久重定向，302临时重定向
+
+rewrite使用正则表达式匹配请求，
+针对URL进行修改，然后重新执行
+rewritelog
+
+last和break
+
+gzip gzip_type gzip_min_length 
+
+sendfile
+
+tryfiles url 默认路径 =404 @backend
+
+error_page 404 index.html
+
+使用tryfile替代if -f
+
+namei -om
+
+不要将项目部署在默认的目录下，有可能被覆盖
+
+
 
 
 ---
